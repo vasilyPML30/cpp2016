@@ -9,6 +9,6 @@ bin/str.o: src/str.c include/str.h
 	gcc -I ./include -c src/str.c -o bin/str.o
 clean:
 	rm -f -r bin
-	rm -f -r lab1
+	rm -f -r test
 bin:
 	mkdir -p bin
