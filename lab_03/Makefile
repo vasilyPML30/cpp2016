@@ -7,6 +7,6 @@ bin/clist.o: src/clist.c include/clist.h
 	gcc -I ./include -c src/clist.c -o bin/clist.o
 clean:
 	rm -f -r bin
-	rm -f -r pos_db
+	rm -f -r pos_d 
 bin:
 	mkdir -p bin
