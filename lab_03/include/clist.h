@@ -1,3 +1,6 @@
+#ifndef _CLIST_H_
+#define _CLIST_H_
+
 #include <stddef.h>
 #include <stdlib.h>
 #define container_of(ptr, type, member) (type*)((char*)(ptr) - offsetof(type, member))
@@ -26,3 +29,5 @@ void add_node(struct intrusive_list *list, struct intrusive_node *new_node);
 void remove_node(struct intrusive_list *list, struct intrusive_node *node);
 int get_length(struct intrusive_list *list);
 void remove_all_positions(struct intrusive_list *list);
+
+#endif
