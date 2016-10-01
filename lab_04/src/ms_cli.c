@@ -17,6 +17,14 @@ int cmp_c(const void *l, const void *r)
 	return *a - *b;
 }
 
+int cmp_str	(const void *l, const void *r)
+{
+	char* const *a = l;
+	char* const *b = r;
+	return strcmp(*a, *b);
+}
+
+
 int str_to_int(char *str)
 {
 	int num = 0, sign = 1;
@@ -53,6 +61,13 @@ int main(int argc, char **argv)
 			printf("%c ", arr[i]);
 		printf("\n");
 		free(arr);
+	}
+	else if (strcmp(argv[1], "str") == 0)
+	{
+		mergesort(argv + 2, argc - 2, sizeof(char *), cmp_str);
+		for (int i = 2; i < argc; ++i)
+			printf("%s ", argv[i]);
+		printf("\n");
 	}
 	return 0;
 }
