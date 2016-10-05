@@ -40,9 +40,11 @@ int str_to_int(char *str)
 
 int main(int argc, char **argv)
 {
-	if (strcmp(argv[1], "int") == 0)
+	if (argc < 2)
+		return 0;
+	else if (strcmp(argv[1], "int") == 0)
 	{
-		int *arr = (int *)malloc(sizeof(int) * argc);
+		int *arr = (int *)malloc(sizeof(int) * argc - 2);
 		for (int i = 0; i < argc - 2; ++i)
 			arr[i] = str_to_int(argv[i + 2]);
 		mergesort(arr, argc - 2, sizeof(int), cmp_i);
@@ -53,7 +55,7 @@ int main(int argc, char **argv)
 	}
 	else if (strcmp(argv[1], "char") == 0)
 	{
-		char *arr = (char *)malloc(sizeof(char) * argc);
+		char *arr = (char *)malloc(sizeof(char) * argc - 2);
 		for (int i = 0; i < argc - 2; ++i)
 			arr[i] = *argv[i + 2];
 		mergesort(arr, argc - 2, sizeof(char), cmp_c);
