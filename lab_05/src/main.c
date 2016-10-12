@@ -3,23 +3,23 @@
 #include "clist.h"
 #include "io.h"
 
-void show_point(struct position_node *node, void *format)
+void show_point(struct intrusive_node *i_node, void *format)
 {
+	struct position_node *node = container_of(i_node, struct position_node, node);
 	printf((char *)format, node->x, node->y);
 }
 
-void count_point(struct position_node *node, void *cnt)
+void count_point(struct intrusive_node *i_node, void *cnt)
 {
 	(*(int *)cnt)++;
 }
 
-void apply(struct intrusive_list *list, void (*op)(struct position_node *, void *), void *args)
+void apply(struct intrusive_list *list, void (*op)(struct intrusive_node *, void *), void *args)
 {
 	struct intrusive_node *ptr = list->head->next;
 	while (ptr != list->head)
 	{
-		struct position_node *node = container_of(ptr, struct position_node, node);
-		op(node, args);
+		op(ptr, args);
 		ptr = ptr->next;
 	}
 }
