@@ -63,10 +63,7 @@ void MyVector::resize(size_t new_size)
 void MyVector::push_back(int value)
 {
   if (_sz >= _cp)
-  {
-    _cp *= 2;
-    reserve(_cp);
-  }
+    reserve(2 * _cp);
   _data[_sz++] = value;
 }
 
