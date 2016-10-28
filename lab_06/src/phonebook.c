@@ -95,7 +95,7 @@ int save_phonebook_xml(const char *filename, phonebook_t *book)
 
 void start_element(void *st, const char *element, const char **attribute)
 {
-    char *name_str = malloc(100 * sizeof(char));
+    char *name_str = malloc(800 * sizeof(char));
     state_t *state = (state_t *)st;
     if (strcmp(element, "phonebook") == 0)
         state->type = PHONEBOOK;
