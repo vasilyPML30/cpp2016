@@ -54,7 +54,10 @@ size_t MyVector::capacity()
 
 void MyVector::resize(size_t new_size)
 {
-  reserve(new_size);
+  size_t new_cp = _cp;
+  while (new_cp < new_size)
+    new_cp <<= 1;
+  reserve(new_cp);
   if (new_size > _sz)
     fill(_data + _sz, _data + new_size, 0);
   _sz = new_size;
