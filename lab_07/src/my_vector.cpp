@@ -74,13 +74,13 @@ void MyVector::insert(size_t index, int value)
 {
   assert(index <= _sz);
   push_back(0);
-  memmove(_data + index + 1, _data + index, sizeof(int) * (_sz - index));
+  memmove(_data + index + 1, _data + index, sizeof(int) * (_sz - index - 1));
   set(index, value);
 }
 
 void MyVector::erase(size_t index)
 {
   assert(index < _sz);
-  memmove(_data + index, _data + index + 1, sizeof(int) * (_sz - index));
+  memmove(_data + index, _data + index + 1, sizeof(int) * (_sz - index - 1));
   resize(_sz - 1);
 }
