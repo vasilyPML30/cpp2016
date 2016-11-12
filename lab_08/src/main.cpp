@@ -11,7 +11,7 @@ typedef std::map<std::string, Matrix*> var_storage;
 int main(int, char **) {
   std::string cmd, arg1, arg2;
   var_storage vars;
-
+  
   while (std::cin) {
     std::cin >> cmd;
     if (cmd == "exit") {

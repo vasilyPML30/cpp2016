@@ -37,16 +37,12 @@ Matrix::Matrix(const Matrix& m){
       _data[i][j] = m._data[i][j];
 }
 
-
 Matrix& Matrix::operator=(const Matrix& m){
   if (this != &m) {
-    delete_data();
-    _rows = m._rows;
-    _cols = m._cols;
-    _data = new_data(_rows, _cols);
-    for (std::size_t i = 0; i < _rows; i++)
-      for (std::size_t j = 0; j < _cols; j++)
-        _data[i][j] = m._data[i][j];
+    Matrix tmp = m;
+    std::swap(_rows, tmp._rows);
+    std::swap(_cols, tmp._cols);
+    std::swap(_data, tmp._data);
   }
   return *this;
 }
@@ -66,8 +62,7 @@ void Matrix::print(FILE* f) const {
   for (std::size_t i = 0; i < _rows; i++) {
     for (std::size_t j = 0; j < _cols; j++)
       fprintf(f, "%i ", _data[i][j]);
-    if (i + 1 < _rows)
-      fprintf(f, "\n");
+    fprintf(f, "\n");
   }
 }
 
@@ -86,7 +81,9 @@ bool Matrix::operator!=(const Matrix& m) const {
 }
 
 Matrix& Matrix::operator+=(const Matrix& m) {
-  *this = *this + m;
+  for (std::size_t i = 0; i < _rows; i++)
+    for (std::size_t j = 0; j < _cols; j++)
+      _data[i][j] += m._data[i][j];
   return *this;
 }
 
@@ -106,11 +103,8 @@ Matrix& Matrix::operator*=(int x) {
 }
 
 Matrix Matrix::operator+(const Matrix& m) const {
-  Matrix tmp(_rows, _cols);
-  for (std::size_t i = 0; i < _rows; i++)
-    for (std::size_t j = 0; j < _cols; j++)
-      tmp._data[i][j] = _data[i][j] + m._data[i][j];
-  return tmp;
+  Matrix tmp(*this);
+  return tmp += m;
 }
 
 Matrix Matrix::operator*(int x) const {
