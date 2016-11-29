@@ -44,10 +44,6 @@ Matrix& shared_ptr::operator*() const
 {
   return *ptr();
 }
-int shared_ptr::getCounter() const
-{
-  return storage_->getCounter();
-}
 
 shared_ptr::Storage::Storage(Matrix* mtx)
 {

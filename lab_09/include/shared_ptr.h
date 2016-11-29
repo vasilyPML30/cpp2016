@@ -15,8 +15,6 @@ class shared_ptr {
 
     Matrix* operator->() const;
     Matrix& operator*() const;
-  
-    int getCounter() const;
 
   private:
     class Storage {
