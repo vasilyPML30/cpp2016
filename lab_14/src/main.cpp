@@ -9,7 +9,8 @@ std::size_t readReg() {
 }
 
 int main() {
-  Matrix array[10];
+  const int reg_num = 10;
+  Matrix array[reg_num];
   std::string command, fname;
   int32_t row, col;
   std::size_t reg1, reg2;
