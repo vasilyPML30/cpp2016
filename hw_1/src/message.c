@@ -72,17 +72,17 @@ int insert_msg(const char *key_file_name, const char *msg, bmp *pic)
             if (fscanf(file, "%i %i %c", &x, &y, &cmp) == EOF)
                 return 1;
             y = pic->core_header.bi_height - y - 1;
-            if (cmp == 'r')
+            if (cmp == 'R')
             {
                 pic->data[y][x].r &= ~(char)0 - 1;
                 pic->data[y][x].r |= ((code >> b) & 1);
             }
-            else if (cmp == 'g')
+            else if (cmp == 'G')
             {
                 pic->data[y][x].g &= ~0 - 1;
                 pic->data[y][x].g |= ((code >> b) & 1);
             }
-            else if (cmp == 'b')
+            else if (cmp == 'B')
             {
                 pic->data[y][x].b &= ~0 - 1;
                 pic->data[y][x].b |= ((code >> b) & 1);
@@ -115,11 +115,11 @@ int extract_msg(const char *key_file_name, char *msg, const bmp *pic)
                     return 1;
             }
             y = pic->core_header.bi_height - y - 1;
-            if (cmp == 'r')
+            if (cmp == 'R')
                 code |= ((pic->data[y][x].r & 1) << b);
-            else if (cmp == 'g')
+            else if (cmp == 'G')
                 code |= ((pic->data[y][x].g & 1) << b);
-            else if (cmp == 'b')
+            else if (cmp == 'B')
                 code |= ((pic->data[y][x].b & 1) << b);
         }
         if (feof(file))

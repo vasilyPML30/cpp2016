@@ -9,9 +9,9 @@ NcursesView::NcursesView(Board &board): _board(board)
 
 void NcursesView::showBoard() const
 {
-    for (int y = 0; y < _board.height; y++)
+    for (int y = 0; y < _board.getH(); y++)
     {
-        for (int x = 0; x < _board.width; x++)
+        for (int x = 0; x < _board.getW(); x++)
             printw("%c", _board.getCell(x, y));
         printw("\n");
     }
@@ -27,7 +27,7 @@ void NcursesView::doGameCycle()
     showBoard();
     while (curState == GAME)
     {
-        mvprintw(_board.height, 0, "%c Move.\n", sign);
+        mvprintw(_board.getH(), 0, "%c Move.\n", sign);
         if (!_getInput())
         {
             curState = DRAW;
@@ -45,9 +45,9 @@ void NcursesView::doGameCycle()
 void NcursesView::_showResult(state result) const
 {
     if (result == DRAW)
-        mvprintw(_board.height, 0, "Draw.\nPress any key to exit\n");
+        mvprintw(_board.getH(), 0, "Draw.\nPress any key to exit\n");
     else
-        mvprintw(_board.height, 0, "%c wins!\nPress any key to exit\n", (result == NOUGHTS ? 'O' : 'X'));
+        mvprintw(_board.getH(), 0, "%c wins!\nPress any key to exit\n", (result == NOUGHTS ? 'O' : 'X'));
     getch();
 }
 
@@ -64,11 +64,11 @@ bool NcursesView::_getInput()
                     _y--;
                 break;
             case 66:
-                if (_y < _board.height - 1)
+                if (_y < _board.getH() - 1)
                     _y++;
                 break;
             case 67:
-                if (_x < _board.width - 1)
+                if (_x < _board.getW() - 1)
                     _x++;
                 break;
             case 68:

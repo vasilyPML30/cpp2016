@@ -1,9 +1,22 @@
 #include "Board.h"
 #include <algorithm>
 
-Board::Board()
+Board::Board(int height, int width, int length)
 {
-    std::fill(*_field, *_field + height * width, '.');
+    _height = height;
+    _width = width;
+    _lenToWin = length;
+    char *field = new char[_height * _width];
+    std::fill(field, field + height * width, '.');
+    _field = new char *[_height];
+    for (int i = 0; i < _height; i++)
+        _field[i] = &field[i * _width];
+}
+
+Board::~Board()
+{
+    delete[] _field[0];
+    delete[] _field;
 }
 
 void Board::move(int x, int y, int sign)
@@ -19,8 +32,8 @@ bool Board::canMove(int x, int y) const
 state Board::isWin() const
 {
     bool draw = true;
-    for (int y = 0; y < height; y++)
-        for (int x = 0; x < width; x++)
+    for (int y = 0; y < _height; y++)
+        for (int x = 0; x < _width; x++)
         {
             char sign = _field[y][x];
             bool rightWin = true;
@@ -32,16 +45,16 @@ state Board::isWin() const
                 draw = false;
                 continue;
             }
-            for (int shift = 0; shift < lenToWin; shift++)
+            for (int shift = 0; shift < _lenToWin; shift++)
             {
-                if (width <= x + shift || _field[y][x + shift] != sign)
+                if (_width <= x + shift || _field[y][x + shift] != sign)
                     rightWin = false;
-                if (height <= y + shift || _field[y + shift][x] != sign)
+                if (_height <= y + shift || _field[y + shift][x] != sign)
                     downWin = false;
-                if (width <= x + shift || height <= y + shift ||
+                if (_width <= x + shift || _height <= y + shift ||
                     _field[y + shift][x + shift] != sign)
                     diagDownWin = false;
-                if (width <= x + shift || y - shift < 0 ||
+                if (_width <= x + shift || y - shift < 0 ||
                     _field[y - shift][x + shift] != sign)
                     diagUpWin = false;
             }
@@ -58,7 +71,22 @@ char Board::getCell(int x, int y) const
     return '?';
 }
 
+int Board::getH() const
+{
+    return _height;
+}
+
+int Board::getW() const
+{
+    return _width;
+}
+
+int Board::getLen() const
+{
+    return _lenToWin;
+}
+
 bool Board::isInside(int x, int y) const
 {
-    return 0 <= x && x < width && 0 <= y && y < height;
+    return 0 <= x && x < _width && 0 <= y && y < _height;
 }

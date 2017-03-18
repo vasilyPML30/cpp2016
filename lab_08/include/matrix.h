@@ -17,7 +17,7 @@ public:
   int get(std::size_t i, std::size_t j) const;
   void print(FILE *f) const;
 
-  Matrix operator+(const Matrix& m) const;
+  const Matrix operator+(const Matrix& m) const;
   Matrix operator-(const Matrix& m) const;
   Matrix operator*(const Matrix& m) const;
   Matrix operator*(int x) const;

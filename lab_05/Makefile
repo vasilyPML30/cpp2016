@@ -1,4 +1,4 @@
-all: bin main
+all: bin main1
 main: bin/main.o bin/clist.o bin/io.o
 	gcc bin/main.o bin/clist.o bin/io.o -o main
 bin/main.o: src/main.c include/clist.h include/io.h

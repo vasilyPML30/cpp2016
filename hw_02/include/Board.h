@@ -6,17 +6,23 @@ enum state {CROSSES, NOUGHTS, DRAW, GAME};
 class Board
 {
 public:
-    Board();
+    Board(int height, int width, int length);
+    ~Board();
     void move(int x, int y, int sign);
     bool canMove(int x, int y) const;
     state isWin() const;
     char getCell(int x, int y) const;
-    static const int height = 10;
-    static const int width = 10;
-    static const int lenToWin = 5;
+    int getH() const;
+    int getW() const;
+    int getLen() const;
 private:
+    Board (const Board &b);
+    Board & operator=(const Board &b);
     bool isInside(int x, int y) const;
-    char _field[height][width];
+    char **_field;
+    int _height;
+    int _width;
+    int _lenToWin;
 };
 
 

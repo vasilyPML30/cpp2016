@@ -1,7 +1,7 @@
 all: create lab1
 lab1: bin/main.o bin/io.o bin/algorithm.o bin/util.o
 	gcc bin/main.o bin/io.o bin/algorithm.o bin/util.o -o lab1
-bin/main.o: src/main.c 
+bin/main.o: src/main.c
 	gcc -I ./include -c src/main.c -o bin/main.o
 bin/io.o: src/io.c include/io.h
 	gcc -I ./include -c src/io.c -o bin/io.o

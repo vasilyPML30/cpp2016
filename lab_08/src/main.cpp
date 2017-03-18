@@ -12,6 +12,10 @@ int main(int, char **) {
   std::string cmd, arg1, arg2;
   var_storage vars;
   
+  Matrix ma(2, 2), mb(2, 2), mc(2, 2);
+  Matrix md = (ma + mb) += mc;
+  md.print(stdout);
+  
   while (std::cin) {
     std::cin >> cmd;
     if (cmd == "exit") {

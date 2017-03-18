@@ -102,7 +102,7 @@ Matrix& Matrix::operator*=(int x) {
   return *this;
 }
 
-Matrix Matrix::operator+(const Matrix& m) const {
+const Matrix Matrix::operator+(const Matrix& m) const {
   Matrix tmp(*this);
   return tmp += m;
 }

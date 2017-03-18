@@ -5,7 +5,7 @@
 
 int main(int argc, char **argv)
 {
-    Board board;
+    Board board(20, 120, 5);
     bool silent = argc > 1 && !strcmp(argv[1], "silent");
     TextView textView(board, silent);
     NcursesView ncursesView(board);

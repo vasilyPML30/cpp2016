@@ -9,9 +9,9 @@ TextView::TextView(Board &board, bool silent): _board(board)
 void TextView::showBoard() const
 {
     printf("\n");
-    for (int y = 0; y < _board.height; y++)
+    for (int y = 0; y < _board.getH(); y++)
     {
-        for (int x = 0; x < _board.width; x++)
+        for (int x = 0; x < _board.getW(); x++)
             printf("%c", _board.getCell(x, y));
         printf("\n");
     }
