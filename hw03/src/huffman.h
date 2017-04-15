@@ -31,6 +31,8 @@ public:
 
   BitWriter &operator<<(bool bit);
   BitWriter &operator<<(const std::vector<bool> &array);
+  BitWriter &operator<<(unsigned char symbol);
+
   void flush();
   size_t tellg() const;
 
@@ -74,7 +76,7 @@ private:
 class HuffTree {
 public:
   HuffTree(const std::vector< std::pair<std::size_t, unsigned char> > &frequencies);
-  HuffTree(std::ifstream &file);
+  HuffTree(BitReader &in_file);
   ~HuffTree();
 
   const std::vector<bool> &get_code(unsigned char symbol) const;
@@ -88,7 +90,7 @@ private:
   TreeNode *next_node(
             std::queue<TreeNode *> &nodes_to_merge,
             const std::vector< std::pair<std::size_t, unsigned char> > &frequencies,
-            size_t freq_pos);
+            size_t &freq_pos);
   void generate_codes(const TreeNode *node, std::vector<bool> &code_prefix);
   
   std::vector< std::vector<bool> > _codes;
@@ -101,10 +103,12 @@ public:
   ~HuffmanEncoder();
 
   void encode(const std::string &file_name, std::ostream &log);
+  static void rewind_istream(std::istream &file);
+
 
   class NeverPredicate {
   public:
-    bool operator()(std::pair<std::size_t, unsigned char>& item);
+    bool operator()(std::pair<std::size_t, unsigned char> &item);
   };
 
 private:
