@@ -13,7 +13,8 @@ public:
   ~BitReader();
 
   BitReader &operator>>(bool &bit);
-  void rewind();
+  std::size_t tellg() const;
+  void read_next_byte();
 
 private:
   BitReader(const BitReader &t);
@@ -34,7 +35,7 @@ public:
   BitWriter &operator<<(unsigned char symbol);
 
   void flush();
-  size_t tellg() const;
+  size_t tellp() const;
 
 private:
   BitWriter(const BitWriter &t);
@@ -43,7 +44,6 @@ private:
   unsigned char _buffer;
   std::ofstream _out_file;
   std::size_t _pos;
-  std::size_t _file_pos;
 };
 
 
@@ -80,7 +80,7 @@ public:
   ~HuffTree();
 
   const std::vector<bool> &get_code(unsigned char symbol) const;
-  unsigned char get_symbol(const std::vector<bool> &code) const;
+  unsigned char get_symbol(BitReader &in_file) const;
   void write_tree(BitWriter &out_file);
 
 private:

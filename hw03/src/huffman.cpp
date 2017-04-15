@@ -8,16 +8,19 @@ BitReader::BitReader(const std::string &file_name):
 }
 
 BitReader &BitReader::operator>>(bool &bit) {
-  if (_pos >= CHAR_BIT) {
-    _buffer = _in_file.get();
-    _pos = 0;
-  }
+  if (_pos >= CHAR_BIT)
+    read_next_byte();
   bit = _buffer & (1 << (CHAR_BIT - 1 - _pos++));
   return *this;
 }
 
-void BitReader::rewind() {
-  HuffmanEncoder::rewind_istream(_in_file);
+std::size_t BitReader::tellg() const {
+  return _in_file.tellg();
+}
+
+void BitReader::read_next_byte() {
+  _pos = 0;
+  _buffer = _in_file.get();
 }
 
 BitWriter::BitWriter(const std::string &file_name):
@@ -55,11 +58,10 @@ void BitWriter::flush() {
   if (_pos)
     _out_file.put(_buffer);
   _pos = 0;
-  _file_pos++;
 }
 
-size_t BitWriter::tellg() const {
-  return _file_pos;
+size_t BitWriter::tellp() const {
+  return _in_file.tellp();
 }
 
 TreeNode::TreeNode(std::pair<std::size_t, unsigned char> symbol) {
@@ -234,18 +236,18 @@ void HuffmanEncoder::encode(const std::string &file_name,
   BitWriter out_file(file_name);
   _tree->write_tree(out_file);
   out_file.flush();
-  std::size_t extra_data_size = out_file.tellg();
+  std::size_t extra_data_size = out_file.tellp();
   _in_file.seekg(std::ios_base::beg);
   std::size_t normal_size;
   while (true) {
     unsigned char symbol = _in_file.get();
     if (_in_file.eof())
       break;
-    normal_size = _in_file.tellg();
+    normal_size = _in_file.tellp();
     out_file << _tree->get_code(symbol);
   }
   out_file.flush();
-  std::size_t compressed_size = (std::size_t)out_file.tellg() - extra_data_size;
+  std::size_t compressed_size = (std::size_t)out_file.tellp() - extra_data_size;
   log << normal_size << std::endl;
   log << compressed_size << std::endl;
   log << extra_data_size << std::endl;
@@ -254,11 +256,16 @@ void HuffmanEncoder::encode(const std::string &file_name,
 HuffmanDecoder::HuffmanDecoder(const std::string &file_name):
                                         _in_file(file_name) {
   _tree = new HuffTree(file_name);
+  _in_file.read_next_byte();
+  _extra_data_size = _in_file.tellg();
 }
 
 HuffmanDecoder::~HuffmanDecoder() {
   delete _tree;
 }
 
-void HuffmanDecoder::decode(const std::string &file_name, std::ostream &log);  
-
+void HuffmanDecoder::decode(const std::string &file_name, std::ostream &log) {
+  while (true) {
+    unsigned char symbol = _tree->get_symbol(_in_file);
+  }
+}
