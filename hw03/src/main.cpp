@@ -4,7 +4,11 @@
 #include <string>
 
 int main() {
-  HuffmanEncoder huff(std::string("infile"));
-  huff.encode(std::string("outfile"), std::cout);
+  HuffmanEncoder *enc = new HuffmanEncoder(std::string("infile"));
+  enc->encode(std::string("outfile"), std::cout);
+  delete enc;
+  HuffmanDecoder *dec = new HuffmanDecoder(std::string("outfile"));
+  dec->decode(std::string("newfile"), std::cout);
+  delete dec;
   return 0;
 }

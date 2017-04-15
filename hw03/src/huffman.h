@@ -10,10 +10,12 @@
 class BitReader {
 public:
   BitReader(const std::string &file_name);
-  ~BitReader();
 
   BitReader &operator>>(bool &bit);
-  std::size_t tellg() const;
+  BitReader &operator>>(unsigned char symbol);
+  BitReader &operator>>(std::size_t number);
+
+  std::size_t tellg();
   void read_next_byte();
 
 private:
@@ -33,9 +35,10 @@ public:
   BitWriter &operator<<(bool bit);
   BitWriter &operator<<(const std::vector<bool> &array);
   BitWriter &operator<<(unsigned char symbol);
+  BitWriter &operator<<(std::size_t number);
 
   void flush();
-  size_t tellp() const;
+  size_t tellp();
 
 private:
   BitWriter(const BitWriter &t);
@@ -46,16 +49,22 @@ private:
   std::size_t _pos;
 };
 
+class Utils {
+public:
+  static void rewind_istream(std::istream &file);
+  static std::size_t bits_to_bytes(std::size_t bits_count);
+};
 
 class TreeNode {
 public:
   TreeNode(std::pair<std::size_t, unsigned char> sybmol);
   TreeNode(TreeNode *left, TreeNode *right);
+  TreeNode(BitReader &in_file);
   TreeNode();
   ~TreeNode();
 
-  const TreeNode *get_left() const;
-  const TreeNode *get_right() const;
+  TreeNode *get_left() const;
+  TreeNode *get_right() const;
   bool is_leaf() const;
   unsigned char get_symbol() const; 
   bool operator<(const TreeNode &node) const;
@@ -82,6 +91,7 @@ public:
   const std::vector<bool> &get_code(unsigned char symbol) const;
   unsigned char get_symbol(BitReader &in_file) const;
   void write_tree(BitWriter &out_file);
+  std::size_t tree_size() const;
 
 private:
   HuffTree(const HuffTree &t);
@@ -95,6 +105,7 @@ private:
   
   std::vector< std::vector<bool> > _codes;
   TreeNode *_root;
+  size_t _tree_size;
 };
 
 class HuffmanEncoder {
@@ -103,9 +114,7 @@ public:
   ~HuffmanEncoder();
 
   void encode(const std::string &file_name, std::ostream &log);
-  static void rewind_istream(std::istream &file);
-
-
+  
   class NeverPredicate {
   public:
     bool operator()(std::pair<std::size_t, unsigned char> &item);
@@ -117,6 +126,10 @@ private:
 
   HuffTree *_tree;
   std::ifstream _in_file;
+  std::size_t _normal_size;
+  std::size_t _compressed_size;
+  std::size_t _extra_data_size;
+  bool _need_compression;
 };
 
 class HuffmanDecoder {
@@ -132,6 +145,10 @@ private:
   
   HuffTree *_tree;
   BitReader _in_file;
+  std::size_t _normal_size;
+  std::size_t _compressed_size;
+  std::size_t _extra_data_size;
+  bool _was_compressed;
 };
 
 #endif
