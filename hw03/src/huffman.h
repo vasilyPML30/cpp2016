@@ -12,8 +12,8 @@ public:
   BitReader(const std::string &file_name);
 
   BitReader &operator>>(bool &bit);
-  BitReader &operator>>(unsigned char symbol);
-  BitReader &operator>>(std::size_t number);
+  BitReader &operator>>(unsigned char &symbol);
+  BitReader &operator>>(unsigned int &number);
 
   std::size_t tellg();
   void read_next_byte();
@@ -35,7 +35,7 @@ public:
   BitWriter &operator<<(bool bit);
   BitWriter &operator<<(const std::vector<bool> &array);
   BitWriter &operator<<(unsigned char symbol);
-  BitWriter &operator<<(std::size_t number);
+  BitWriter &operator<<(unsigned int number);
 
   void flush();
   size_t tellp();
@@ -52,7 +52,7 @@ private:
 class Utils {
 public:
   static void rewind_istream(std::istream &file);
-  static std::size_t bits_to_bytes(std::size_t bits_count);
+  static unsigned int bits_to_bytes(unsigned int bits_count);
 };
 
 class TreeNode {
@@ -60,7 +60,6 @@ public:
   TreeNode(std::pair<std::size_t, unsigned char> sybmol);
   TreeNode(TreeNode *left, TreeNode *right);
   TreeNode(BitReader &in_file);
-  TreeNode();
   ~TreeNode();
 
   TreeNode *get_left() const;
@@ -84,7 +83,8 @@ private:
 
 class HuffTree {
 public:
-  HuffTree(const std::vector< std::pair<std::size_t, unsigned char> > &frequencies);
+  HuffTree(const std::vector< std::pair<std::size_t, unsigned char> >
+                                                        &frequencies);
   HuffTree(BitReader &in_file);
   ~HuffTree();
 
@@ -99,8 +99,8 @@ private:
 
   TreeNode *next_node(
             std::queue<TreeNode *> &nodes_to_merge,
-            const std::vector< std::pair<std::size_t, unsigned char> > &frequencies,
-            size_t &freq_pos);
+            const std::vector< std::pair<std::size_t, unsigned char> >
+                                       &frequencies, size_t &freq_pos);
   void generate_codes(const TreeNode *node, std::vector<bool> &code_prefix);
   
   std::vector< std::vector<bool> > _codes;
@@ -117,7 +117,7 @@ public:
   
   class NeverPredicate {
   public:
-    bool operator()(std::pair<std::size_t, unsigned char> &item);
+    bool operator()(const std::pair<std::size_t, unsigned char> &item) const;
   };
 
 private:
@@ -126,9 +126,9 @@ private:
 
   HuffTree *_tree;
   std::ifstream _in_file;
-  std::size_t _normal_size;
-  std::size_t _compressed_size;
-  std::size_t _extra_data_size;
+  unsigned int _normal_size;
+  unsigned int _compressed_size;
+  unsigned int _extra_data_size;
   bool _need_compression;
 };
 
@@ -145,9 +145,9 @@ private:
   
   HuffTree *_tree;
   BitReader _in_file;
-  std::size_t _normal_size;
-  std::size_t _compressed_size;
-  std::size_t _extra_data_size;
+  unsigned int _normal_size;
+  unsigned int _compressed_size;
+  unsigned int _extra_data_size;
   bool _was_compressed;
 };
 
