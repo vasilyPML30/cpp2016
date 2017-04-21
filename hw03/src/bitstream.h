@@ -12,8 +12,9 @@ public:
   BitReader(const std::string &file_name);
 
   BitReader &operator>>(bool &bit);
-  BitReader &operator>>(unsigned char &symbol);
-  BitReader &operator>>(uint32_t &number);
+
+  template <typename T>
+  BitReader &operator>>(T &value);
 
   std::size_t tellg();
   void read_next_byte();
@@ -34,8 +35,9 @@ public:
 
   BitWriter &operator<<(bool bit);
   BitWriter &operator<<(const std::vector<bool> &array);
-  BitWriter &operator<<(unsigned char symbol);
-  BitWriter &operator<<(uint32_t number);
+  
+  template<typename T>
+  BitWriter &operator<<(const T &value);
 
   void flush();
   size_t tellp();
@@ -48,5 +50,27 @@ private:
   std::ofstream _out_file;
   std::size_t _pos;
 };
+
+template<typename T>
+BitReader &BitReader::operator>>(T &value) {
+  std::size_t size = sizeof(T) * 8;
+  T tmp_value = 0;
+  for (std::size_t i = 0; i < size; i++) {
+    bool bit;
+    *this >> bit;
+    tmp_value |= (bit << (size - 1 - i));
+  }
+  value = tmp_value;
+  return *this;
+}
+
+template<typename T>
+BitWriter &BitWriter::operator<<(const T &value) {
+  std::size_t size = sizeof(T) * 8;
+  for (std::size_t i = 0; i < size; i++) {
+    *this << (bool)(value & (1 << (size - 1 - i)));
+  }
+  return *this;
+}
 
 #endif

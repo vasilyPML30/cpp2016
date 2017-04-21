@@ -20,29 +20,6 @@ BitReader &BitReader::operator>>(bool &bit) {
   return *this;
 }
 
-BitReader &BitReader::operator>>(unsigned char &symbol) {
-  unsigned char tmp_symbol = 0;
-  for (std::size_t i = 0; i < CHAR_BIT; i++) {
-    bool bit;
-    *this >> bit;
-    tmp_symbol |= (bit << (CHAR_BIT - 1 - i));
-  }
-  symbol = tmp_symbol;
-  return *this;
-}
-
-BitReader &BitReader::operator>>(uint32_t &number) {
-  std::size_t size = sizeof(number) * 8;
-  uint32_t tmp_number = 0;
-  for (std::size_t i = 0; i < size; i++) {
-    bool bit;
-    *this >> bit;
-    tmp_number |= (bit << (size - 1 - i));
-  }
-  number = tmp_number;
-  return *this;
-}
-
 std::size_t BitReader::tellg() {
   return _in_file.tellg();
 }
@@ -82,21 +59,6 @@ BitWriter &BitWriter::operator<<(bool bit) {
 BitWriter &BitWriter::operator<<(const std::vector<bool> &array) {
   for (std::size_t i = 0; i < array.size(); i++) {
     *this << array[i];
-  }
-  return *this;
-}
-
-BitWriter &BitWriter::operator<<(unsigned char symbol) {
-  for (std::size_t i = 0; i < CHAR_BIT; i++) {
-    *this << (bool)(symbol & (1 << (CHAR_BIT - 1 - i)));
-  }
-  return *this;
-}
-
-BitWriter &BitWriter::operator<<(uint32_t number) {
-  std::size_t size = sizeof(number) * 8;
-  for (std::size_t i = 0; i < size; i++) {
-    *this << (bool)(number & (1 << (size - 1 - i)));
   }
   return *this;
 }
