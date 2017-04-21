@@ -37,12 +37,28 @@ int main(int argc, char **argv) {
     return 1;
   }
   if (encode) {
-    HuffmanEncoder encoder(in_file);
-    encoder.encode(out_file, std::cout);
+    try {
+      HuffmanEncoder encoder(in_file);
+      encoder.encode(out_file, std::cout);
+    }
+    catch (std::ios_base::failure error) {
+      std::cerr << error.what() << std::endl;
+    }
+    catch (std::bad_alloc error) {
+      std::cerr << error.what() << std::endl;
+    }
   }
   else {
-    HuffmanDecoder decoder(in_file);
-    decoder.decode(out_file, std::cout);
+    try {
+      HuffmanDecoder decoder(in_file);
+      decoder.decode(out_file, std::cout);
+    }
+    catch (std::ios_base::failure error) {
+      std::cerr << error.what() << std::endl;
+    }
+    catch (std::bad_alloc error) {
+      std::cerr << error.what() << std::endl;
+    }
   }
   return 0;
 }

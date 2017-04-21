@@ -2,180 +2,92 @@
 #include <climits>
 #include <algorithm>
 
-BitReader::BitReader(const std::string &file_name):
-                      _in_file(file_name.c_str()) {
-  _buffer = _pos = 0;
-  read_next_byte();
-}
-
-BitReader &BitReader::operator>>(bool &bit) {
-  if (_pos >= CHAR_BIT)
-    read_next_byte();
-  bit = _buffer & (1 << (CHAR_BIT - 1 - _pos++));
-  return *this;
-}
-
-BitReader &BitReader::operator>>(unsigned char &symbol) {
-  symbol = 0;
-  for (std::size_t i = 0; i < CHAR_BIT; i++) {
-    bool bit;
-    *this >> bit;
-    symbol |= (bit << (CHAR_BIT - 1 - i));
-  }
-  return *this;
-}
-
-BitReader &BitReader::operator>>(unsigned int &number) {
-  number = 0;
-  std::size_t size = sizeof(number) * 8;
-  for (std::size_t i = 0; i < size; i++) {
-    bool bit;
-    *this >> bit;
-    number |= (bit << (size - 1 - i));
-  }
-  return *this;
-}
-
-std::size_t BitReader::tellg() {
-  return _in_file.tellg();
-}
-
-void BitReader::read_next_byte() {
-  _pos = 0;
-  _buffer = _in_file.get();
-}
-
-BitWriter::BitWriter(const std::string &file_name):
-                     _out_file(file_name.c_str()) {
-  _buffer = _pos = 0;
-}
-
-BitWriter::~BitWriter() {
-  flush();
-}
-
-BitWriter &BitWriter::operator<<(bool bit) {
-  if (_pos >= CHAR_BIT) {
-    flush();
-  }
-  _buffer |= (bit << (CHAR_BIT - 1 - _pos++));
-  return *this;
-}
-
-BitWriter &BitWriter::operator<<(const std::vector<bool> &array) {
-  for (std::size_t i = 0; i < array.size(); i++)
-    *this << array[i];
-  return *this;
-}
-
-BitWriter &BitWriter::operator<<(unsigned char symbol) {
-  for (std::size_t i = 0; i < CHAR_BIT; i++)
-    *this << (bool)(symbol & (1 << (CHAR_BIT - 1 - i)));
-  return *this;
-}
-
-BitWriter &BitWriter::operator<<(unsigned int number) {
-  std::size_t size = sizeof(number) * 8;
-  for (std::size_t i = 0; i < size; i++) {
-    *this << (bool)(number & (1 << (size - 1 - i)));
-  }
-  return *this;
-}
-
-void BitWriter::flush() {
-  if (_pos)
-    _out_file.put(_buffer);
-  _pos = _buffer = 0;
-}
-
-size_t BitWriter::tellp() {
-  return _out_file.tellp();
-}
-
-
-void Utils::rewind_istream(std::istream &file) {
+void rewind_istream(std::istream &file) {
   file.clear();
   file.seekg(0, std::ios_base::beg);  
 }
 
-unsigned int Utils::bits_to_bytes(unsigned int bits_count) {
+uint32_t bits_to_bytes(uint32_t bits_count) {
   return (bits_count + 7) / 8;
 }
 
-TreeNode::TreeNode(std::pair<std::size_t, unsigned char> symbol) {
+HuffmanTree::TreeNode::TreeNode(std::pair<std::size_t, unsigned char> symbol) {
   _symbol = symbol.second;
   _frequency = symbol.first;
   _left = _right = NULL;
-  _is_leaf = true;
 }
 
-TreeNode::TreeNode(TreeNode *left, TreeNode *right) {
+HuffmanTree::TreeNode::TreeNode(TreeNode *left, TreeNode *right) {
   _left = left;
   _right = right;
-  _is_leaf = false;
-  update_frequency();
+  _frequency = _left->_frequency + _right->_frequency;
 }
 
-TreeNode::TreeNode(BitReader &in_file) {
-  in_file >> _is_leaf;
-  if (_is_leaf) {
-    in_file >> _symbol;
+HuffmanTree::TreeNode::TreeNode(BitReader &in_file) {
+  bool has_no_children;
+  in_file >> has_no_children;
+  if (has_no_children) {
+    unsigned char tmp_symbol;
+    in_file >> tmp_symbol;
     _left = _right = NULL;
+    _symbol = tmp_symbol;
   }
   else {
-    _left = new TreeNode(in_file);
-    _right = new TreeNode(in_file);
+    TreeNode *tmp_left = new TreeNode(in_file);
+    TreeNode *tmp_right = new TreeNode(in_file);
+    if (!tmp_left || !tmp_right) {
+      throw std::bad_alloc();
+    }
+    _left = tmp_left;
+    _right = tmp_right;
   }
 }
 
-TreeNode::~TreeNode() {
+HuffmanTree::TreeNode::~TreeNode() {
   delete _left;
   delete _right;
 }
 
-TreeNode *TreeNode::get_left() const {
+HuffmanTree::TreeNode *HuffmanTree::TreeNode::get_left() const {
   return _left;
 }
 
-TreeNode *TreeNode::get_right() const {
+HuffmanTree::TreeNode *HuffmanTree::TreeNode::get_right() const {
   return _right;
 }
 
-bool TreeNode::is_leaf() const {
-  return _is_leaf;
+bool HuffmanTree::TreeNode::is_leaf() const {
+  return !_left && !_right;
 }
 
-unsigned char TreeNode::get_symbol() const {
+unsigned char HuffmanTree::TreeNode::get_symbol() const {
   return _symbol;
 }
 
-void TreeNode::update_frequency() {
-  if (_is_leaf)
-    return;
-  _frequency = 0;
-  if (_left)
-    _frequency += _left->_frequency;
-  if (_right)
-    _frequency += _right->_frequency;
+bool HuffmanTree::TreeNode::operator<(const TreeNode &node) const {
+   return _frequency < node._frequency;
 }
 
-bool TreeNode::operator<(const TreeNode &node) const {
-  return _frequency < node._frequency;
-}
-
-TreeNode *HuffTree::next_node(std::queue<TreeNode *> &nodes_to_merge,
+HuffmanTree::TreeNode *HuffmanTree::next_node(
+                              std::queue<TreeNode *> &nodes_to_merge,
                               const std::vector< std::pair<std::size_t,
                               unsigned char> > &frequencies,
                               size_t &freq_pos) {
   TreeNode *node1 = NULL, *node2 = NULL, *result = NULL;
   if (nodes_to_merge.empty() && freq_pos < frequencies.size()) {
     result = node1 = new TreeNode(frequencies[freq_pos]);
+    if (!node1) {
+      throw std::bad_alloc();
+    }
   }
   else if (!nodes_to_merge.empty() && freq_pos >= frequencies.size()) {
     result = node2 = nodes_to_merge.front();
   }
   else {
     node1 = new TreeNode(frequencies[freq_pos]);
+    if (!node1) {
+      throw std::bad_alloc();
+    }
     node2 = nodes_to_merge.front();
     result = (*node1 < *node2 ? node1 : node2);
   }
@@ -188,10 +100,10 @@ TreeNode *HuffTree::next_node(std::queue<TreeNode *> &nodes_to_merge,
   return result;
 }
 
-void HuffTree::generate_codes(const TreeNode *node,
+void HuffmanTree::generate_codes(const TreeNode *node,
                               std::vector<bool> &code_prefix) {
   if (node->is_leaf()) {
-    _codes[node->get_symbol()] = code_prefix;
+    _codes[node->get_symbol()] = (node == _root ? std::vector<bool>(1) : code_prefix);
   }
   else {
     code_prefix.push_back(false);
@@ -203,7 +115,7 @@ void HuffTree::generate_codes(const TreeNode *node,
   }
 }
 
-HuffTree::HuffTree(const std::vector< std::pair<std::size_t, unsigned char> >
+HuffmanTree::HuffmanTree(const std::vector< std::pair<std::size_t, unsigned char> >
                                                               &frequencies) {
   std::size_t freq_pos = 0;
   std::queue<TreeNode *> nodes_to_merge;
@@ -212,32 +124,38 @@ HuffTree::HuffTree(const std::vector< std::pair<std::size_t, unsigned char> >
     TreeNode *right = next_node(nodes_to_merge, frequencies, freq_pos);
     TreeNode *left = next_node(nodes_to_merge, frequencies, freq_pos);
     nodes_to_merge.push(new TreeNode(left, right));
+    if (!nodes_to_merge.back()) {
+      throw std::bad_alloc();
+    }
     _tree_size++;
   }
-  _root = nodes_to_merge.front();
+  _root = next_node(nodes_to_merge, frequencies, freq_pos);
   _codes.resize(UCHAR_MAX + 1);
   std::vector<bool> code_prefix;
   generate_codes(_root, code_prefix);
 }
 
-HuffTree::HuffTree(BitReader &in_file) {
+HuffmanTree::HuffmanTree(BitReader &in_file) {
   _root = new TreeNode(in_file);
+  if (!_root) {
+    throw std::bad_alloc();
+  }
 }
 
-HuffTree::~HuffTree() {
+HuffmanTree::~HuffmanTree() {
   delete _root;
 }
 
 
-const std::vector<bool> &HuffTree::get_code(unsigned char symbol) const {
+const std::vector<bool> &HuffmanTree::get_code(unsigned char symbol) const {
   return _codes[symbol];
 }
 
-std::size_t HuffTree::tree_size() const {
+std::size_t HuffmanTree::tree_size() const {
   return _tree_size;
 }
 
-unsigned char HuffTree::get_symbol(BitReader &in_file) const {
+unsigned char HuffmanTree::get_symbol(BitReader &in_file) const {
   TreeNode *node = _root;
   while (!node->is_leaf()) {
     bool direction;
@@ -250,9 +168,9 @@ unsigned char HuffTree::get_symbol(BitReader &in_file) const {
   return node->get_symbol();
 }
 
-void TreeNode::write_node(BitWriter &out_file) const {
-  out_file << _is_leaf;
-  if (_is_leaf) {
+void HuffmanTree::TreeNode::write_node(BitWriter &out_file) const {
+  out_file << is_leaf();
+  if (is_leaf()) {
     out_file << _symbol;
   }
   else {
@@ -261,7 +179,7 @@ void TreeNode::write_node(BitWriter &out_file) const {
   }
 }
 
-void HuffTree::write_tree(BitWriter &out_file) {
+void HuffmanTree::write_tree(BitWriter &out_file) const {
   _root->write_node(out_file);
 }
 
@@ -272,30 +190,54 @@ bool HuffmanEncoder::NeverPredicate::operator()
 
 HuffmanEncoder::HuffmanEncoder(const std::string &file_name) :
                                   _in_file(file_name.c_str()) {
+  if (!_in_file) {
+    throw std::ios_base::failure("can not open input file");
+  }
+  _in_file.exceptions(std::ios_base::eofbit | std::ios_base::badbit);
   std::vector< std::pair<std::size_t, unsigned char> >
                                     frequencies(UCHAR_MAX + 1);
-  _normal_size = 0;
+  uint32_t tmp_normal_size = 0;
   while (true) {
-    unsigned char symbol = _in_file.get();
-    if (_in_file.eof())
-      break;
-    _normal_size = _in_file.tellg() * 8;
+    unsigned char symbol;
+    try {
+      symbol = _in_file.get();
+    }
+    catch (std::ios_base::failure error) {
+      if (_in_file.eof()) {
+        break;
+      }
+      else {
+        throw error;
+      }
+    }
+    tmp_normal_size = _in_file.tellg() * 8;
     frequencies[symbol].second = symbol;
     frequencies[symbol].first++;
   }
-  std::sort(frequencies.begin(), frequencies.end());
-  frequencies.resize(std::remove_if(frequencies.begin(), frequencies.end(),
-                     NeverPredicate()) - frequencies.begin());
-  _tree = new HuffTree(frequencies);
-  _extra_data_size = _tree->tree_size() + frequencies.size() * CHAR_BIT +
-                     1 + 3 * 8 * sizeof(unsigned int);
-  _compressed_size = 0;
-  for (size_t i = 0; i < frequencies.size(); i++)
-    _compressed_size += _tree->get_code(frequencies[i].second).size()
-                        * frequencies[i].first;
-  _need_compression = (Utils::bits_to_bytes(_extra_data_size) +
-                       Utils::bits_to_bytes(_compressed_size) <
-                       Utils::bits_to_bytes(_normal_size));
+  if (!tmp_normal_size) {
+    _normal_size = 0;
+    _need_compression = false;
+    _tree = NULL;
+  }
+  else {
+    std::sort(frequencies.begin(), frequencies.end());
+    frequencies.resize(std::remove_if(frequencies.begin(), frequencies.end(),
+                       NeverPredicate()) - frequencies.begin());
+    _tree = new HuffmanTree(frequencies);
+    if (!_tree) {
+      throw std::bad_alloc();
+    }
+    _normal_size = tmp_normal_size;
+    _extra_data_size = _tree->tree_size() + frequencies.size() * CHAR_BIT +
+                       1 + 3 * 8 * sizeof(uint32_t);
+    _compressed_size = 0;
+    for (size_t i = 0; i < frequencies.size(); i++)
+      _compressed_size += _tree->get_code(frequencies[i].second).size()
+                          * frequencies[i].first;
+    _need_compression = (bits_to_bytes(_extra_data_size) +
+                         bits_to_bytes(_compressed_size) <
+                         bits_to_bytes(_normal_size));
+  }
 }
 
 HuffmanEncoder::~HuffmanEncoder() {
@@ -312,43 +254,66 @@ void HuffmanEncoder::encode(const std::string &file_name, std::ostream &log) {
     _tree->write_tree(out_file);
   }
   out_file.flush();
-  Utils::rewind_istream(_in_file);
+  rewind_istream(_in_file);
   while (true) {
-    unsigned char symbol = _in_file.get();
-    if (_in_file.eof())
-      break;
+    unsigned char symbol;
+    try {
+      symbol = _in_file.get();
+    }
+    catch (std::ios_base::failure error) {
+      if (_in_file.eof()) {
+        break;
+      }
+      else {
+        throw error;
+      }
+    }
     if (_need_compression)
       out_file << _tree->get_code(symbol);
     else
       out_file << symbol;
   }
   out_file.flush();
-  log << Utils::bits_to_bytes(_normal_size) << std::endl;
+  log << bits_to_bytes(_normal_size) << std::endl;
   if (_need_compression) {
-    log << Utils::bits_to_bytes(_compressed_size) << std::endl;
-    log << Utils::bits_to_bytes(_extra_data_size) << std::endl;
+    log << bits_to_bytes(_compressed_size) << std::endl;
+    log << bits_to_bytes(_extra_data_size) << std::endl;
   }
   else {
-    log << Utils::bits_to_bytes(_normal_size) << std::endl;
-    log << 1 + sizeof(unsigned int) << std::endl;
+    log << bits_to_bytes(_normal_size) << std::endl;
+    log << 1 + sizeof(uint32_t) << std::endl;
   }
 }
 
 HuffmanDecoder::HuffmanDecoder(const std::string &file_name):
                                         _in_file(file_name) {
-  _in_file >> _was_compressed;
-  _in_file >> _normal_size;
-  if (_was_compressed) {
-    _in_file >> _extra_data_size;
-    _in_file >> _compressed_size;
-    _tree = new HuffTree(_in_file);
+  bool tmp_was_compressed;
+  uint32_t tmp_normal_size;
+  uint32_t tmp_extra_data_size;
+  uint32_t tmp_compressed_size;
+  //HuffmanTree::TreeNode *tmp_tree;
+
+  _in_file >> tmp_was_compressed;
+  _in_file >> tmp_normal_size;
+  if (tmp_was_compressed) {
+    _in_file >> tmp_extra_data_size;
+    _in_file >> tmp_compressed_size;
+    _tree = new HuffmanTree(_in_file);
+    if (!_tree) {
+      throw std::bad_alloc();
+    }
+    _in_file.read_next_byte();
   }
   else {
     _tree = NULL;
-    _compressed_size = _normal_size;
-    _extra_data_size = 1 + 8 * sizeof(unsigned int);
+    tmp_compressed_size = tmp_normal_size;
+    tmp_extra_data_size = 1 + 8 * sizeof(uint32_t);
   }
-  _in_file.read_next_byte();
+  _was_compressed = tmp_was_compressed;
+  _normal_size = tmp_normal_size;
+  _extra_data_size = tmp_extra_data_size;
+  _compressed_size = tmp_compressed_size;
+  //_tree = tmp_tree;
 }
 
 HuffmanDecoder::~HuffmanDecoder() {
@@ -356,8 +321,12 @@ HuffmanDecoder::~HuffmanDecoder() {
 }
 
 void HuffmanDecoder::decode(const std::string &file_name, std::ostream &log) {
-  std::ofstream out_file(file_name.c_str()); 
-  for (std::size_t i = 0; i < Utils::bits_to_bytes(_normal_size); i++) {
+  std::ofstream out_file(file_name.c_str());
+  if (!out_file) {
+    throw std::ios_base::failure("can not open output file");
+  }
+  out_file.exceptions(std::ios_base::eofbit | std::ios_base::badbit);
+  for (std::size_t i = 0; i < bits_to_bytes(_normal_size); i++) {
     unsigned char symbol;
     if (_was_compressed) {
       symbol = _tree->get_symbol(_in_file);
@@ -367,8 +336,8 @@ void HuffmanDecoder::decode(const std::string &file_name, std::ostream &log) {
     }
     out_file.put(symbol);
   }
-  log << Utils::bits_to_bytes(_extra_data_size) +
-         Utils::bits_to_bytes(_compressed_size) << std::endl;
-  log << Utils::bits_to_bytes(_normal_size) << std::endl;
-  log << Utils::bits_to_bytes(_extra_data_size) << std::endl;
+  log << bits_to_bytes(_extra_data_size) +
+         bits_to_bytes(_compressed_size) << std::endl;
+  log << bits_to_bytes(_normal_size) << std::endl;
+  log << bits_to_bytes(_extra_data_size) << std::endl;
 }
