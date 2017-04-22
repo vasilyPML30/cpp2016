@@ -50,9 +50,11 @@ void HuffmanTest::test_encode() const {
     }
     catch (std::ios_base::failure error) {
       check(false, error.what());
+      continue;
     }
     catch (std::bad_alloc error) {
       check(false, error.what());
+      continue;
     }
     check(compare_files(_tests_data_dir +
                         to_string(test_case) + std::string(".enc"),
@@ -71,9 +73,11 @@ void HuffmanTest::test_decode() const {
     }
     catch (std::ios_base::failure error) {
       check(false, error.what());
+      continue;
     }
     catch (std::bad_alloc error) {
       check(false, error.what());
+      continue;
     }
     check(compare_files(_tests_data_dir +
                         to_string(test_case) + std::string(".dec"),
