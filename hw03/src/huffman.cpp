@@ -103,7 +103,8 @@ HuffmanTree::TreeNode *HuffmanTree::next_node(
 void HuffmanTree::generate_codes(const TreeNode *node,
                               std::vector<bool> &code_prefix) {
   if (node->is_leaf()) {
-    _codes[node->get_symbol()] = (node == _root ? std::vector<bool>(1) : code_prefix);
+    _codes[node->get_symbol()] =
+          (node == _root ? std::vector<bool>(1) : code_prefix);
   }
   else {
     code_prefix.push_back(false);
@@ -115,8 +116,9 @@ void HuffmanTree::generate_codes(const TreeNode *node,
   }
 }
 
-HuffmanTree::HuffmanTree(const std::vector< std::pair<std::size_t, unsigned char> >
-                                                              &frequencies) {
+HuffmanTree::HuffmanTree(const std::vector<
+                               std::pair<std::size_t, unsigned char> >
+                                                         &frequencies) {
   std::size_t freq_pos = 0;
   std::queue<TreeNode *> nodes_to_merge;
   _tree_size = frequencies.size();
@@ -291,7 +293,7 @@ HuffmanDecoder::HuffmanDecoder(const std::string &file_name):
   uint32_t tmp_normal_size;
   uint32_t tmp_extra_data_size;
   uint32_t tmp_compressed_size;
-  HuffmanTree::TreeNode *tmp_tree;
+  HuffmanTree *tmp_tree;
 
   _in_file >> tmp_was_compressed;
   _in_file >> tmp_normal_size;
@@ -299,15 +301,17 @@ HuffmanDecoder::HuffmanDecoder(const std::string &file_name):
     _in_file >> tmp_extra_data_size;
     _in_file >> tmp_compressed_size;
     tmp_tree = new HuffmanTree(_in_file);
-    if (!_tree) {
+    if (!tmp_tree) {
       throw std::bad_alloc();
     }
-    _in_file.read_next_byte();
   }
   else {
     tmp_tree = NULL;
     tmp_compressed_size = tmp_normal_size;
     tmp_extra_data_size = 1 + 8 * sizeof(uint32_t);
+  }
+  if (tmp_normal_size) {
+    _in_file.read_next_byte();
   }
   _was_compressed = tmp_was_compressed;
   _normal_size = tmp_normal_size;

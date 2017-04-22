@@ -4,12 +4,10 @@
 int Test::failed_num = 0;
 int Test::total_num = 0;
 
-void Test::check(bool expr, const std::string &func,
-                  const std::string &file_name, size_t line_num) {
+void Test::check(bool expr, const std::string &message) {
   total_num++;
   if (!expr) {
-    std::cout << "test failed: " << func << "() ";
-    std::cout << "in " << file_name << ":" << line_num << std::endl;
+    std::cout << message << std::endl;
     failed_num++;
   }
 }

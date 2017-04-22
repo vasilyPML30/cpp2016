@@ -1,7 +1,11 @@
-all: bin huffman
-test: bin bin/autotest.o bin/test.o bin/huffman_test.o bin/huffman.o bin/bitstream.o
-	g++ bin/autotest.o bin/huffman_test.o bin/huffman.o bin/bitstream.o bin/test.o -o bin/huffman
-huffman: bin/main.o bin/huffman.o bin/bitstream.o
+all: bin bin/huffman
+run_test: test
+	bin/test test_data/ 6
+	rm test_data/*.enc test_data/*.dec
+test: bin bin/test
+bin/test: bin/autotest.o bin/test.o bin/huffman_test.o bin/huffman.o bin/bitstream.o
+	g++ bin/autotest.o bin/huffman_test.o bin/huffman.o bin/bitstream.o bin/test.o -o bin/test
+bin/huffman: bin/main.o bin/huffman.o bin/bitstream.o
 	g++ bin/main.o bin/huffman.o bin/bitstream.o -o bin/huffman
 bin/main.o: src/main.cpp src/huffman.h
 	g++ -c -Wall -Wextra -Wshadow -Werror -g src/main.cpp -o bin/main.o

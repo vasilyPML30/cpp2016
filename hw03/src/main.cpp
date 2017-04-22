@@ -34,6 +34,12 @@ int main(int argc, char **argv) {
     correct_input = false;
   if (in_file == "" || out_file == "" || !correct_input) {
     std::cout << "incorrect parameters" << std::endl;
+    std::cout << "usage:" << std::endl;
+    std::cout << "./huffman -c -f|--file input_file";
+    std::cout << "-o|--output compressed_file" << std::endl;
+    std::cout << "./huffman -u -f|--file input_file";
+    std::cout << "-o|--output uncompressed_file" << std::endl;
+    std::cout << "usage:" << std::endl;
     return 1;
   }
   if (encode) {

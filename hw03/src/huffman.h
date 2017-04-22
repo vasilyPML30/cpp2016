@@ -10,9 +10,6 @@
 
 typedef unsigned int uint32_t;
 
-class HuffmanEncoder;
-class HuffmanDecoder;
-
 class HuffmanTree {
 public:
   HuffmanTree(const std::vector< std::pair<std::size_t, unsigned char> >
@@ -24,9 +21,6 @@ public:
   unsigned char get_symbol(BitReader &in_file) const;
   void write_tree(BitWriter &out_file) const;
   std::size_t tree_size() const;
-
-  friend HuffmanEncoder;
-  friend HuffmanDecoder;
 
 private:
   class TreeNode {
